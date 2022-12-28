@@ -1,5 +1,7 @@
-// game user info
+let alertMe = document.getElementById("alertMe");
 
+// game user info
+let container = document.getElementsByClassName("container")[0];
 let username = document.getElementById("username");
 let svBtn = document.getElementById("save-user"); // saveButton
 let ldBtn = document.getElementById("load-user"); // load Button
@@ -23,126 +25,140 @@ let gCont = document.getElementsByClassName("g-content")[0];
 
 let gBack = document.getElementsByClassName("g-back")[0];
 
+let audioBtn = document.getElementById("s-track");
 
 
-// g info function
 
-let storeUser = {};
 
-function saveUser(e) {
-    let keyName = {
-        uName: "username"
+function allUser() {
+    // let hey = 0;
+    let key, kName = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        key = localStorage.key(i);
+        kName = JSON.parse(localStorage.getItem(key));
+
+        if (kName["toDel"]) {
+            localStorage.removeItem(key);
+            i--;
+        }
+
     }
 
-    let addUser = 0;
-    let readLocalStorage;
+    // console.log("out hey ", hey);
+}
+/*
+    To do:
+        -save all the user in the local storage
+        - if it exist the exit and print a message 
+        - else add the user, with level, score adn timer to local storage, disable load
+*/
+function saveUser(e) {
     let getUser = username.value;
 
+    let userScoreBar = {};
 
     if (getUser.length < 4) {
-        document.getElementsByClassName("inv-fdb1")[0].style.display = "block";
+        let invFdb1 = document.getElementsByClassName("inv-fdb1")[0];
+        displayInvalidMsg(invFdb1, 2);
         return;
     }
-    /*
-        To DO:
 
-        compare username with the one in local storage
-        store the keyname.uname to read storag
-        if it exists, exit
-        else set keyname uName to localkey  then increment adduser
-        add username, score, level, and timer to the local  storage by using JSON.stringfy
-        JSON.stringify() converts a value to JSON notation  representing it
-    */
 
     for (let i = 0; i < localStorage.length; i++) {
 
-        readLocalStorage = JSON.parse(localStorage.getItem(keyName.uName))
-        if (getUser == readLocalStorage["uName"]) {
-            console.log("please select another username");
+
+        if (getUser == localStorage.key(i)) {
+
+            let invFdb4 = document.getElementsByClassName("inv-fdb4")[0];
+            displayInvalidMsg(invFdb4, 2);
             return;
         }
-        addUser++;
-        keyName.uName = localStorage.key(i);
     }
 
-    if (addUser == 0) keyName["uName"] = "username";
-    else keyName["uName"] = "username" + addUser;
+    userScoreBar["uScore"] = 0;
+    userScoreBar["uLevel"] = 1;
+    userScoreBar["uTimer"] = timer;
+    userScoreBar["isGameOver"] = "false";
+    userScoreBar["toDel"] = "delUser";
 
-    storeUser["uName"] = getUser;
-    storeUser["uLevel"] = uLevel.innerHTML;
-    storeUser["uScore"] = uScore.innerHTML;
-    storeUser["uTimer"] = uTimer.innerHTML;
+    uLevel.innerHTML = userScoreBar["uLevel"];
+    uScore.innerHTML = userScoreBar["uScore"];
+    uTimer.innerHTML = userScoreBar["uTimer"];
 
-    localStorage.setItem(keyName.uName, JSON.stringify(storeUser));
 
+    localStorage.setItem(getUser, JSON.stringify(userScoreBar));
 
     username.setAttribute("disabled", "");
     svBtn.setAttribute("disabled", "");
     ldBtn.setAttribute("disabled", "");
     newUBtn.removeAttribute("disabled");
-}
-
-
-function toStore() {
-    let keyName = {
-        uName: username.innerHTML
-    }
-
-    // storeUser["uName"] = getUser;
-    storeUser["uLevel"] = uLevel.innerHTML;
-    storeUser["uScore"] = uScore.innerHTML;
-    storeUser["uTimer"] = uTimer.innerHTML;
-
-
-    localStorage.setItem(keyName.uName, JSON.stringify(storeUser));
+    if (strGBtn.innerHTML == "Restart") strGBtn.innerHTML = "Start";
 
 
 }
 
 /*
-    To Do:
-    - create a variable that holds the value of username
-    - create a variable that will read the localstorage 
-    - create an object litteral
-    - create a loop that will run the length of the local storage and increment the itertor. use the incrementer to set the object to the key at the end;
-    - parse the value of local storage to with key the object to readlocalstorage.
-    - inside the loop create a conditional statement that checks if getuser equals readlocalstorage with key uName. 
-
+    To do:
+        - check if username is less than 4 print invalid message exit
+        - if the useranme value is null then exit
+        - parse the json file in a variable 
+        - update the score bar 
+        - disable button 
 */
 
 function loadUser(e) {
+    let userScoreBar;
     let getUser = username.value;
-    let readLocalStorage;
-    let keyName = {
-        uName: "username"
+    if (getUser.length < 4) {
+        let invFdb1 = document.getElementsByClassName("inv-fdb1")[0];
+        displayInvalidMsg(invFdb1, 2);
+        return;
     }
 
-    for (let i = 0; i < localStorage.length; i++) {
-        readLocalStorage = JSON.parse(localStorage.getItem(keyName.uName));
-
-        if (getUser == readLocalStorage["uName"]) {
-            username.setAttribute("disabled", "");
-            ldBtn.setAttribute("disabled", "");
-            svBtn.setAttribute("disabled", "");
-            newUBtn.removeAttribute("disabled");
-
-
-            uScore.innerHTML = readLocalStorage["uScore"];
-            uLevel.innerHTML = readLocalStorage["uLevel"];
-            uTimer.innerHTML = readLocalStorage["uTimer"];
-            console.log("loaded");
-        }
-
-        keyName.uName = localStorage.key(i);
+    if (localStorage.getItem(getUser) == null) {
+        let invFdb2 = document.getElementsByClassName("inv-fdb2")[0];
+        displayInvalidMsg(invFdb2, 2);
+        // console.log("I am null");
+        return;
     }
+
+    // console.log("loaded ...");
+
+    userScoreBar = JSON.parse(localStorage.getItem(getUser));
+
+    uLevel.innerHTML = userScoreBar["uLevel"];
+    uScore.innerHTML = userScoreBar["uScore"];
+    uTimer.innerHTML = userScoreBar["uTimer"];
+    username.setAttribute("disabled", "");
+    svBtn.setAttribute("disabled", "");
+    ldBtn.setAttribute("disabled", "");
+    newUBtn.removeAttribute("disabled");
+
+    if (userScoreBar["isGameOver"] == "true") {
+        // console.log("restart me")
+        strGBtn.innerHTML = "Restart";
+        scr = 0;
+        return;
+    }
+    // console.log("start me");
+    strGBtn.innerHTML = "Start";
 
 }
+
+
 
 /*
 enable username, loadbutton, savebutton
 disbaled new user button 
 */
 function newUser(event) {
+    if (strGBtn.hasAttribute("disabled")) {
+        let msgs = "Please, stop the game !!";
+        clearInterval(interval);
+        displayMsg(msgs);
+        callSetInterval();
+        return;
+    }
     if (confirm("DO you want to add new user ?") == true) {
 
         username.removeAttribute("disabled");
@@ -153,11 +169,6 @@ function newUser(event) {
     event.preventDefault();
 }
 
-// if (gCont.children[0].children[0].className == gCont.children[1].children[0].className) {
-//     console.log("yay we are equal")
-// }
-
-// if ()
 
 /*
     To Do:
@@ -169,10 +180,20 @@ function newUser(event) {
         do nothing 
 */
 
+
+
 function clearAllUsers(event) {
+    if (strGBtn.hasAttribute("disabled")) {
+        let msgs = "Please, stop the game !!";
+        clearInterval(interval);
+        displayMsg(msgs);
+        callSetInterval();
+        return;
+    }
     if (confirm("Do you want to delete users !?") == true) {
-        localStorage.clear();
-        console.log("All clear");
+        // localStorage.clear();
+        allUser();
+        // console.log("All clearawsz");
 
         username.removeAttribute("disabled");
         svBtn.removeAttribute("disabled");
@@ -187,6 +208,16 @@ function clearAllUsers(event) {
 }
 
 
+
+function displayMsg(msg) {
+    alertMe.innerHTML = `<p>${msg}</p>`;
+    alertMe.style.left = "0%";
+    setTimeout(() => {
+        alertMe.removeAttribute("style");
+    }, 1200);
+}
+
+// 
 
 // g commands
 
@@ -212,11 +243,47 @@ let interval, counter = 30,
     ends = 20,
     timer = 30;
 
+
+function restartGame(isOver) {
+
+    let getUser = username.value;
+    let userScoreBar = JSON.parse(localStorage.getItem(getUser));
+
+    userScoreBar["uScore"] = 0;
+    userScoreBar["uLevel"] = 1;
+    userScoreBar["uTimer"] = timer;
+    userScoreBar["isGameOver"] = isOver;
+
+    uLevel.innerHTML = userScoreBar["uLevel"];
+    uScore.innerHTML = userScoreBar["uScore"];
+    uTimer.innerHTML = userScoreBar["uTimer"];
+
+    scr = 0;
+    localStorage.setItem(getUser, JSON.stringify(userScoreBar));
+
+    // console.log("Yeah i restarted");
+
+}
+
+
+
 function callSetInterval() {
+
+
+    if (strGBtn.innerHTML == "Restart") {
+        strGBtn.innerHTML = "Start";
+        restartGame("false");
+    }
+
     interval = setInterval(function () {
 
         if (counter == 0) {
-            console.log("Im 0");
+            let userScoreBar = JSON.parse(localStorage.getItem(username.value));
+            userScoreBar["isGameOver"] = "true";
+            localStorage.setItem(username.value, JSON.stringify(userScoreBar));
+
+            // console.log("Im 0");
+            displayMsg("GAME OVER !!");
             clearInterval(interval);
             pseGBtn.setAttribute("disabled", "");
             stpGBtn.setAttribute("disabled", "");
@@ -224,12 +291,14 @@ function callSetInterval() {
             ends = counter;
             counter = timer;
             uTimer.innerHTML = counter;
-            console.log("counter reset = 10");
+            // console.log("counter reset = ", timer);
+            strGBtn.innerHTML = "Restart";
 
             return;
         }
         counter--;
         uTimer.innerHTML = counter;
+
     }, 1000);
 
 }
@@ -244,9 +313,26 @@ function callSetInterval() {
 
 
 */
-// let k = 2;
+
+
+// display the invalid message for a period
+function displayInvalidMsg(elmt, sec) {
+    elmt.style.display = "block";
+    sec *= 1000;
+    setTimeout(() => {
+        elmt.removeAttribute("style");
+    }, sec);
+}
+
+let lvel;
 
 function startGame(e) {
+    if (!username.hasAttribute("disabled")) {
+        invFdb3 = document.getElementsByClassName("inv-fdb3")[0];
+        displayInvalidMsg(invFdb3, 3);
+        // console.log("Username is empty !!");
+        return;
+    }
     callSetInterval();
     strGBtn.setAttribute("disabled", "");
     pseGBtn.removeAttribute("disabled");
@@ -258,17 +344,66 @@ function startGame(e) {
     let cardSet = new Set(),
         posSet = new Set(),
         level = parseInt(uLevel.innerHTML);
+    // because the total card is 32
+    if (level <= 16) {
+        lvel = level;
+    } else {
+        lvel = 16;
+    }
 
     deleteCards();
-    createCards(level);
-
+    createCards(lvel);
+    // createCards(level);
 
     // generateCards(storeCards, storePosition, k);
-    generateCards(cardSet, posSet, level);
+    generateCards(cardSet, posSet, lvel);
 
 }
 
 
+
+let newLevel;
+
+function startGames(event) {
+    if (!username.hasAttribute("disabled")) {
+        invFdb3 = document.getElementsByClassName("inv-fdb3")[0];
+        displayInvalidMsg(invFdb3, 2);
+        return;
+    }
+    // call interval
+    strGBtn.setAttribute("disabled", "");
+    pseGBtn.removeAttribute("disabled");
+    stpGBtn.removeAttribute("disabled");
+    ends = counter;
+    checker = 0;
+
+    callSetInterval();
+    // audioBtn.setAttribute("autoplay", "true");
+    // audioBtn.setAttribute("pause", "false");
+
+
+    let cardSet = new Set(),
+        posSet = new Set(),
+        actualLvel = parseInt(uLevel.innerHTML);
+
+    // set the limit of the actual level at 16 
+    if (actualLvel <= 16) {
+        console.log("new level set to actual level");
+        newLevel = actualLvel;
+    } else {
+        newLevel = 16;
+        console.log("new level set to 16");
+    }
+
+    console.log("delete all cards")
+    deleteCards();
+
+    console.log("Create crads !!");
+    createCards(newLevel);
+
+    console.log("Generate cards !");
+    generateCards(cardSet, posSet, newLevel);
+}
 
 
 /*
@@ -311,6 +446,9 @@ function stopGame(e) {
     uTimer.innerHTML = counter;
     enumCard = 0;
     pseGBtn.innerHTML = "Pause";
+    uScore.innerHTML = parseInt(uScore.innerHTML) - scr;
+    scr = 0; // reset the score to 0 after level and restart
+
 }
 
 
@@ -320,8 +458,8 @@ function stopGame(e) {
         - create a enumerator to mark each card with a num
         - create a funtion that deletes all cards
 */
-// 2022-12-17 07:53:25 
-let enumCard = 0;
+
+let enumCard = 0; // enumerate cards
 
 function createCards(num) {
     num *= 2;
@@ -332,17 +470,13 @@ function createCards(num) {
     }
 }
 
-/*
-    To do:
-        This is one way to remove all children from a node
-        
-*/
+//   This is one way to remove all children from a node
 
 function deleteCards() {
     //  while gCont has children
     while (gCont.firstChild) {
         gCont.removeChild(gCont.firstChild);
-        console.log("remove");
+        // console.log("remove");
     }
     enumCard = 0;
 }
@@ -357,80 +491,26 @@ function deleteCards() {
 */
 
 
-// storeArr = [];
-
-
-function generateCard(card, Pos, lvel) {
-    let randCard, randPos;
-    for (let i = 0; i < lvel; i++) {
-
-        if (card.size == lvel) {
-            console.log(`Set size = ${lvel}`);
-            break;
-        }
-
-        // get random number / 32
-        randCard = Math.floor(Math.random() * ((32 - 1) + 1) + 1);
-
-        console.log("Rand card : ", randCard);
-
-
-        if (card.has(randCard)) {
-            i--;
-            console.log("Decr i : ", i);
-        } else {
-            card.add(randCard);
-            // storeArr.push(randCard);
-        }
-    }
-    // console.log("Rand pos : ", randPos);
-
-    let cardNum = (lvel * 2);
-
-    for (let i = 1; i <= cardNum; i++) {
-
-        if (Pos.size == cardNum) break;
-
-        randPos = Math.floor(Math.random() * ((cardNum - 1) + 1) + 1);
-
-        if (Pos.has(randPos)) i--;
-        else Pos.add(randPos);
-
-    }
-
-    // // Convert Set object to an Array object, with Array.from
-    let arrCard = Array.from(card);
-    let arrPos = Array.from(Pos);
-    let k = 0;
-
-    // gBack[0].children[0].src = "./rma2/"+ i + ".png";
-    // for (let i = 0; i < arrCard.length; i++) {
-    //     k = i;
-
-    gCont.children[arrPos[k]].firstElementChild.firstElementChild.src = "./rma2/" + i + ".png";;
-    gCont.children[arrPos[k + 1]].firstElementChild.firstElementChild.src = "./rma2/" + i + ".png";
-}
-
-
-/* 
-    To do: 
-        - create a function generate image in the g-back
-        - c
-*/
 
 function generateCards(card, pos, lvel) {
-    let randCard, randPos, cardNum = (lvel * 2);
+    let randCard, randPos, level;
+
+    cardNum = (lvel * 2);
+    // if (lvel <=3) {
+    //     level = lvel;
+    // } else {
+    //     level = 4;
+    //     cardNum = level*2 ;
+    // }
 
     for (let i = 0; i < lvel; i++) {
 
         randCard = Math.floor(Math.random() * ((32 - 1) + 1) + 1);
         if (card.has(randCard)) {
-            // decrement i
             i--;
-            console.log("I aleady have: ", randCard);
+            // console.log("I aleady have: ", randCard);
         } else {
-            // add randcard to card set
-            console.log("rand Card Just added: ", randCard);
+            // console.log("rand Card Just added: ", randCard);
             card.add(randCard);
         }
 
@@ -444,10 +524,10 @@ function generateCards(card, pos, lvel) {
         if (pos.has(randPos)) {
             // decrement i
             i--;
-            console.log("I already have : ", i);
+            // console.log("I already have : ", i);
         } else {
             // add randPos to the pos
-            console.log("Position just added ", randPos);
+            // console.log("Position just added ", randPos);
             pos.add(randPos);
         }
 
@@ -455,14 +535,14 @@ function generateCards(card, pos, lvel) {
 
     arrCard = Array.from(card);
     arrPos = Array.from(pos);
-    if (arrCard && arrPos) {
-        console.log("we exist hourah!");
-    }
+    // if (arrCard && arrPos) {
+    //     console.log("we exist hourah!");
+    // }
     let k = 0;
     // iterate and add the html code
     for (let i = 0; i < arrCard.length; i++) {
-
-        console.log(`${arrPos[k]}`);
+        console.log(arrCard.length);
+        // console.log(`${arrPos[k]}`);
 
         // childre[arrPos[k++]] will get the cards
         // firstElementChild will get the g-back 
@@ -491,68 +571,85 @@ function generateCards(card, pos, lvel) {
 */
 
 let matchImages = [];
-let prevCardId, curCardId, checker = 0;
+let prevCardId, curCardId, checker = 0,
+    scr = 0;
+
 
 function flipCard(e) {
 
-    if (pseGBtn.innerHTML == "Resume" || (pseGBtn.innerHTML == "Pause" && ends == 0)) {
-        console.log("Game is pause");
-
+    if (pseGBtn.innerHTML == "Resume" || (pseGBtn.innerHTML == "Pause" && ends == 0) || (strGBtn.innerHTML == "Start" && !strGBtn.hasAttribute("disabled"))) {
+        // console.log("Game is pause");
         return;
     }
 
-    e.parentNode.classList.add("active");
     checker++;
+    e.parentNode.classList.add("active");
+
     if (checker == 1) {
         prevCardId = e.parentNode.previousElementSibling;
-        console.log("checker = 1 ");
+        // console.log("checker = 1 ");
         return;
+
     } else {
-        console.log("checker = 2 ");
+        // console.log("checker = 2 ");
         curCardId = e.parentNode.previousElementSibling;
         checker = 0;
-        console.log(curCardId);
+        // console.log(curCardId);
     }
 
     let prev = parseInt(prevCardId.getAttribute("data-card-id"));
-    console.log("prev : ", prev)
+    // console.log("prev : ", prev)
     let curr = parseInt(curCardId.getAttribute("data-card-id"));
-    console.log("curr:", curr)
+    // console.log("curr:", curr)
 
     if (prev != curr) {
-        console.log("they dont much")
-
+        // console.log("they dont much")
         setTimeout(() => {
 
             prevCardId.nextElementSibling.classList.remove("active");
-
             curCardId.nextElementSibling.classList.remove("active");
-        }, 500);
+        }, 200);
         return;
     }
 
-    console.log("Yay the match !");
+    // console.log("Yay the match !");
     matchImages.push(curr);
-    if (matchImages.length == parseInt(uLevel.innerHTML)) {
-        // console.log("")
+    scr += 10;
+    uScore.innerHTML = parseInt(uScore.innerHTML) + 10;
+    // if (matchImages.length == parseInt(uLevel.innerHTML)) {
+    if (matchImages.length == parseInt(lvel)) {
+
+        scr = 0;
+        uLevel.innerHTML = parseInt(uLevel.innerHTML) + 1;
+        saveScore();
 
         setTimeout(() => {
             // clearInterval(interval);
             stopGame(e);
-            alert("You won!!");
+            // alert("You won!!");
+            displayMsg("YOU WIN !!");
 
-
+            setTimeout(() => {
+                startGame();
+            }, 1500);
         }, 500);
-        uLevel.innerHTML = parseInt(uLevel.innerHTML) + 1;
-        toStore();
 
 
     }
 }
 
 
-//  previous, current , match to store, check
-function imgValidator(prev, cur, match, check) {
+
+function saveScore() {
+    let getUser = username.value;
+    let userScoreBar = {};
+
+    userScoreBar["uScore"] = uScore.innerHTML;
+    userScoreBar["uLevel"] = uLevel.innerHTML;
+    userScoreBar["uTimer"] = timer;
+    userScoreBar["toDel"] = "delUser";
+
+    localStorage.setItem(getUser, JSON.stringify(userScoreBar));
 
 }
 
